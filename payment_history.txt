@@ -1,1 +1,4 @@
-Cash
+MOAZ - Cash - Amount: $0
+AQSA - Credit Card: 12345676543xd343 - Amount: $0
+sdfg - Cash - Amount: $0
+m - Credit Card: 6 - Amount: $0

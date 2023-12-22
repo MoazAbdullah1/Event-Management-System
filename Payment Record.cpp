@@ -6,10 +6,9 @@ using namespace std;
 
 class PaymentMethod {
 public:
-    virtual void makePayment(double amount) = 0;
+    virtual void makePayment(int amount) = 0;
     virtual void display() const = 0;
-    virtual string getPaymentType() const = 0;
-    virtual ~PaymentMethod() {}
+    virtual string getPaymentDetails(const string& name, int amount) const = 0;
 };
 
 class CreditCard : public PaymentMethod {
@@ -19,22 +18,22 @@ private:
 public:
     CreditCard(const string& number) : cardNumber(number) {}
 
-    void makePayment(double amount) override {
-        cout << "Paid $" << amount << " using credit card ending in " << cardNumber.substr(cardNumber.length() - 4) << endl;
+    void makePayment(int amount) override {
+        cout << "Paid $" << amount << " using credit card ending in " << cardNumber << endl;
     }
 
     void display() const override {
-        cout << "Credit Card: **** **** **** " << cardNumber.substr(cardNumber.length() - 4) << endl;
+        cout << "Credit Card: " << cardNumber << endl;
     }
 
-    string getPaymentType() const override {
-        return "CreditCard";
+    string getPaymentDetails(const string& name, int amount) const override {
+        return name + " - Credit Card: " + cardNumber + " - Amount: $" + to_string(amount);
     }
 };
 
 class Cash : public PaymentMethod {
 public:
-    void makePayment(double amount) override {
+    void makePayment(int amount) override {
         cout << "Paid $" << amount << " in cash" << endl;
     }
 
@@ -42,8 +41,8 @@ public:
         cout << "Cash" << endl;
     }
 
-    string getPaymentType() const override {
-        return "Cash";
+    string getPaymentDetails(const string& name, int amount) const override {
+        return name + " - Cash - Amount: $" + to_string(amount);
     }
 };
 
@@ -52,12 +51,6 @@ private:
     vector<PaymentMethod*> paymentMethods;
 
 public:
-    ~PaymentHistory() {
-        for (auto method : paymentMethods) {
-            delete method;
-        }
-    }
-
     void addPaymentMethod(PaymentMethod* method) {
         paymentMethods.push_back(method);
     }
@@ -69,11 +62,12 @@ public:
         }
     }
 
-    void saveToFile() const {
-        ofstream file("payment_history.txt");
+    void saveToFile(const string& customerName) const {
+        ofstream file("payment_history.txt", ios::app); // Open in append mode
         if (file.is_open()) {
             for (const auto& method : paymentMethods) {
-                file << method->getPaymentType() << endl;
+                int amount = 0; // You may want to modify this based on your actual use case
+                file << method->getPaymentDetails(customerName, amount) << endl;
             }
             file.close();
             cout << "Payment history saved to file." << endl;
@@ -91,7 +85,7 @@ private:
 public:
     Customer(const string& customerName) : name(customerName) {}
 
-    void makePayment(PaymentMethod* method, double amount) {
+    void makePayment(PaymentMethod* method, int amount) {
         method->makePayment(amount);
         paymentHistory.addPaymentMethod(method);
     }
@@ -102,12 +96,16 @@ public:
     }
 
     void savePaymentHistoryToFile() const {
-        paymentHistory.saveToFile();
+        paymentHistory.saveToFile(name);
     }
 };
 
 int main() {
-    Customer customer("John Doe");
+    cout << "Enter customer name: ";
+    string customerName;
+    getline(cin, customerName);
+
+    Customer customer(customerName);
 
     cout << "Choose payment method (1 for Credit Card, 2 for Cash): ";
     int choice;
@@ -126,7 +124,7 @@ int main() {
         return 1;
     }
 
-    double amount;
+    int amount;
     cout << "Enter payment amount: $";
     cin >> amount;
 
@@ -134,8 +132,6 @@ int main() {
     customer.displayPaymentHistory();
     customer.savePaymentHistoryToFile();
 
-//    delete paymentMethod;
-
     return 0;
 }
-
+//  budget 
