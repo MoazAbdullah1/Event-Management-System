@@ -1,4 +1,4 @@
-Event Type: shadi
-Venue: outdoor
-Package: VIP3
-Total Price: $8000
+Event Type: hh
+Venue: indoor
+Package: VIP1
+Total Price: $799.2
