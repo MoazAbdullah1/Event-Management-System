@@ -1,4 +1,0 @@
-Event Type: hh
-Venue: indoor
-Package: VIP1
-Total Price: $799.2

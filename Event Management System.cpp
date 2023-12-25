@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -8,9 +9,10 @@ class Event {
 public:
     string type;
     double basePrice;
+    bool onlineRegistration;
 
-    Event(const string& eventType, double eventPrice)
-        : type(eventType), basePrice(eventPrice) {}
+    Event(const string& eventType, double eventPrice, bool onlineReg = false)
+        : type(eventType), basePrice(eventPrice), onlineRegistration(onlineReg) {}
 
     virtual double calculateTotalPrice() const {
         return basePrice;
@@ -23,9 +25,10 @@ public:
     double discount;
     double priceRangeMin;
     double priceRangeMax;
+    vector<string> services;
 
-    Package(const string& packageName, double packageDiscount, double minPrice, double maxPrice)
-        : name(packageName), discount(packageDiscount), priceRangeMin(minPrice), priceRangeMax(maxPrice) {}
+    Package(const string& packageName, double packageDiscount, double minPrice, double maxPrice, const vector<string>& packageServices)
+        : name(packageName), discount(packageDiscount), priceRangeMin(minPrice), priceRangeMax(maxPrice), services(packageServices) {}
 };
 
 class Booking {
@@ -34,9 +37,11 @@ public:
     Package package;
     string venue;
     double totalPrice;
+    bool isCancelled;
+    string feedback;
 
     Booking(const Event& bookedEvent, const Package& bookedPackage, const string& bookedVenue)
-        : event(bookedEvent), package(bookedPackage), venue(bookedVenue) {
+        : event(bookedEvent), package(bookedPackage), venue(bookedVenue), isCancelled(false) {
         totalPrice = event.calculateTotalPrice() * (1 - package.discount);
     }
 
@@ -46,6 +51,18 @@ public:
         cout << "Venue: " << venue << "\n";
         cout << "Package: " << package.name << "\n";
         cout << "Total Price: $" << totalPrice << "\n";
+        cout << "Event " << (event.onlineRegistration ? "supports" : "does not support") << " online registration.\n";
+        cout << "Services Included: ";
+        for (const auto& service : package.services) {
+            cout << service << ", ";
+        }
+        cout << "\n";
+        if (isCancelled) {
+            cout << "Booking has been cancelled.\n";
+        }
+        if (!feedback.empty()) {
+            cout << "Feedback: " << feedback << "\n";
+        }
     }
 
     void saveToFile(const string& filename) const {
@@ -55,6 +72,18 @@ public:
             outFile << "Venue: " << venue << "\n";
             outFile << "Package: " << package.name << "\n";
             outFile << "Total Price: $" << totalPrice << "\n";
+            outFile << (event.onlineRegistration ? "Online Registration Supported\n" : "No Online Registration\n");
+            outFile << "Services Included: ";
+            for (const auto& service : package.services) {
+                outFile << service << ", ";
+            }
+            outFile << "\n";
+            if (isCancelled) {
+                outFile << "Booking has been cancelled.\n";
+            }
+            if (!feedback.empty()) {
+                outFile << "Feedback: " << feedback << "\n";
+            }
             outFile.close();
             cout << "Booking details saved to " << filename << "\n";
         } else {
@@ -65,15 +94,33 @@ public:
     void readFromFile(const string& filename) {
         ifstream inFile(filename);
         if (inFile.is_open()) {
-            string tempEventType;
-            inFile >> tempEventType;
-            getline(inFile, event.type); // Read the rest of the line
+            inFile.ignore(); // Ignore the newline character left in the buffer
+            getline(inFile, event.type);
 
             inFile >> venue;
             inFile >> package.name;
             inFile >> totalPrice;
 
-            // Display the read details
+            string onlineReg;
+            getline(inFile, onlineReg);
+            event.onlineRegistration = (onlineReg.find("Online Registration Supported") != string::npos);
+
+            string servicesLine;
+            getline(inFile, servicesLine);
+            size_t pos = 0;
+            string delimiter = ", ";
+            while ((pos = servicesLine.find(delimiter)) != string::npos) {
+                package.services.push_back(servicesLine.substr(0, pos));
+                servicesLine.erase(0, pos + delimiter.length());
+            }
+            package.services.push_back(servicesLine); // Add the last service
+
+            string cancelledLine;
+            getline(inFile, cancelledLine);
+            isCancelled = (cancelledLine.find("Booking has been cancelled.") != string::npos);
+
+            getline(inFile, feedback);
+
             cout << "Booking details read from " << filename << "\n";
             displayBookingDetails();
 
@@ -84,43 +131,17 @@ public:
     }
 };
 
-class EventBooking : public Booking {
-public:
-    EventBooking(const Event& bookedEvent, const Package& bookedPackage, const string& bookedVenue)
-        : Booking(bookedEvent, bookedPackage, bookedVenue) {}
-
-    // New functionality: Online registration or physical
-    void registrationMethod(const string& method) {
-        cout << "Registration Method: " << method << "\n";
-    }
-
-    // New functionality: Cancel Event
-    void cancelEvent() {
-        cout << "Event Canceled.\n";
-    }
-
-    // New functionality: Feedback
-    void giveFeedback(const string& feedback) {
-        cout << "Feedback: " << feedback << "\n";
-    }
-};
-
-class Services {
-public:
-    void displayServices() {
-        cout << "Our Services:\n";
-        cout << "- Decor\n";
-        cout << "- Photo\n";
-        cout << "- Video\n";
-        cout << "- Catering\n";
-    }
-};
-
 int main() {
+	cout<<"*********************************************************************************"<<endl<<
+	"                     	WelCome To BOOKING SIDE Our System							" <<endl<<endl<<endl
+	<< "                	<<< We Create And You Celebrate >>>                  "<<endl
+	<<"*********************************************************************************"<<endl<<endl;
+	
     string eventType;
     double eventPrice;
     string venueType;
     string packageName;
+    vector<string> services;
 
     cout << "Enter the type of event: ";
     cin >> eventType;
@@ -135,6 +156,18 @@ int main() {
 
     cout << "Choose a package (VIP1, VIP2, VIP3): ";
     cin >> packageName;
+
+    cout << "Enter services separated by commas (e.g., decor,photo,video,catering): ";
+    string servicesInput;
+    cin.ignore(); // Ignore the newline character left in the buffer
+    getline(cin, servicesInput);
+    size_t pos = 0;
+    string delimiter = ",";
+    while ((pos = servicesInput.find(delimiter)) != string::npos) {
+        services.push_back(servicesInput.substr(0, pos));
+        servicesInput.erase(0, pos + delimiter.length());
+    }
+    services.push_back(servicesInput); // Add the last service
 
     double discount;
     double minPrice;
@@ -157,40 +190,34 @@ int main() {
         return 1;
     }
 
-    Package selectedPackage(packageName, discount, minPrice, maxPrice);
-
-    EventBooking customerBooking(selectedEvent, selectedPackage, venueType);
+    Package selectedPackage(packageName, discount, minPrice, maxPrice, services);
+    Booking customerBooking(selectedEvent, selectedPackage, venueType);
     customerBooking.displayBookingDetails();
     customerBooking.saveToFile("booking_details.txt");
 
-    // Read booking details from a file
-    EventBooking readBooking(selectedEvent, selectedPackage, venueType);
+    Booking readBooking(selectedEvent, selectedPackage, venueType);
     readBooking.readFromFile("booking_details.txt");
 
-    // New functionality: Online registration or physical
-    readBooking.registrationMethod("Online");
+    cout << "\nAdditional Features:\n";
+    cout << "1. Online Registration: " << (selectedEvent.onlineRegistration ? "Supported" : "Not Supported") << "\n";
+    cout << "2. Cancel the Event? (y/n): ";
+    char cancelChoice;
+    cin >> cancelChoice;
+    if (cancelChoice == 'y' || cancelChoice == 'Y') {
+        customerBooking.isCancelled = true;
+        cout << "Event has been cancelled.\n";
+    }
 
-    // New functionality: Cancel Event
-    readBooking.cancelEvent();
+    cin.ignore();
+    cout << "3. Provide Feedback (or press Enter to skip): ";
+    getline(cin, customerBooking.feedback);
+    if (!customerBooking.feedback.empty()) {
+        cout << "Thank you for your feedback!\n";
+    }
 
-    // New functionality: Feedback
-    readBooking.giveFeedback("We create and You Celebrate");
-
-    // New functionality: Display available services
-    Services service;
-    service.displayServices();
+    cout << "\nUpdated Booking Details:\n";
+    customerBooking.displayBookingDetails();
 
     return 0;
 }
-
-
-
-
-
-
-// Online reg or physical
-// cancel event
-// feedback
-// MONOGARAM:::>> We create and You Celebrate
-// Our services // decor, photo, video, catring
 
