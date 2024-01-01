@@ -220,41 +220,54 @@ int main()
          << "                			<<< We Create And You Celebrate >>>                  " << endl
          << "*************************************************************************************************************" << endl
          << endl
-         << "              		<<To Check Payment Details of Customer you need to login First>>                     " << endl
+         << "              		<<< To Check Payment Details of Customer you need to login First >>>                     " << endl <<endl
          << "*************************************************************************************************************" << endl
          << endl;
 
+int loginAttempts = 0;
+const int maxLoginAttempts = 3;
+
+while (loginAttempts < maxLoginAttempts) {
     string userName;
     string password;
 
-    cout << "						Manager Name : ";
+    cout << "						  Manager Name: ";
     cin >> userName;
 
-    cout << "					  Enter Admin password : ";
+    cout << "					     Enter Admin password: ";
     cin >> password;
 
     User U1("MOAZ", "moaz123"), U2("AHMER", "ahmer123");
 
-    string Password;
-
     if (U1.check(userName, password))
     {
-        cout << endl << "					  Login Succesfully welcome " << U1.get() << endl << endl;
+        cout << endl << "					   Login Successfully >>> welcome " << '"' << U1.get() << '"' << endl << endl;
+        break;
     }
     else if (U2.check(userName, password))
     {
-        cout << endl << "					  Login Succesfully welcome " << U2.get() << endl << endl;
+        cout << endl << "Login Successfully, welcome " << U2.get() << endl << endl;
+        break;
     }
     else
     {
-        cout << endl << "					  login unsuccessfull Plz Check you Entered Details Again... " << endl;
+        cout << endl << "			Login unsuccessful. Please check your entered details and try again." << endl << endl;
+        loginAttempts++;
     }
+}
 
-    cout << "==========================================================================================================" << endl
+if (loginAttempts == maxLoginAttempts) {
+    cout << "			Maximum login attempts reached. Exiting the program." << endl;
+    return 1;
+}
+
+
+    cout << "============================================================================================================" << endl
          << endl;
 
     int choice;
     Customer customer("Umer");
+    PaymentMethod* paymentMethod = nullptr;
 
     customer.readPaymentHistoryFromFile();
 
@@ -275,27 +288,25 @@ int main()
         {
         case 1:
         {
-            cout << "Choose payment method (1 for Credit Card, 2 for Cash): ";
             int paymentChoice;
-            cin >> paymentChoice;
 
-            PaymentMethod* paymentMethod;
-            if (paymentChoice == 1)
-            {
-                string cardNumber;
-                cout << "Enter credit card number: ";
-                cin >> cardNumber;
-                paymentMethod = new CreditCard(cardNumber);
-            }
-            else if (paymentChoice == 2)
-            {
-                paymentMethod = new Cash();
-            }
-            else
-            {
-                cerr << "Invalid choice. Exiting." << endl;
-                return 1;
-            }
+			while (true) {
+			    cout << "Enter payment choice (1 for Credit Card, 2 for Cash): ";
+			    cin >> paymentChoice;
+
+			    if (paymentChoice == 1) {
+			        string cardNumber;
+			        cout << "Enter credit card number: ";
+			        cin >> cardNumber;
+			        paymentMethod = new CreditCard(cardNumber);
+			        break;
+			    } else if (paymentChoice == 2) {
+			        paymentMethod = new Cash();
+			        break;
+			    } else {
+			        cerr << "Invalid choice. Please enter 1 or 2." << endl;
+			    }
+			}
 
             int amount;
             cout << "Enter payment amount: $";
@@ -312,33 +323,35 @@ int main()
             break;
         case 4:
         {
-            cout << "Choose payment method for refund (1 for Credit Card, 2 for Cash): ";
             int refundChoice;
-            cin >> refundChoice;
-
-            PaymentMethod* paymentMethod;
-            if (refundChoice == 1)
-            {
-                string cardNumber;
-                cout << "Enter credit card number: ";
-                cin >> cardNumber;
-                paymentMethod = new CreditCard(cardNumber);
-            }
-            else if (refundChoice == 2)
-            {
-                paymentMethod = new Cash();
-            }
-            else
-            {
-                cerr << "Invalid choice. Exiting." << endl;
-                return 1;
-            }
-
+            PaymentMethod* refundMethod = nullptr;
+            while (true)
+			{
+	            cout << "Choose payment method for refund (1 for Credit Card, 2 for Cash): ";
+	            cin >> refundChoice;
+	
+	            PaymentMethod* refundMethod;
+	            if (refundChoice == 1)
+	            {
+	                string cardNumber;
+	                cout << "Enter credit card number: ";
+	                cin >> cardNumber;
+	                refundMethod = new CreditCard(cardNumber);
+	            }
+	            else if (refundChoice == 2)
+	            {
+	                refundMethod = new Cash();
+	            }
+	            else
+	            {
+	                cerr << "Invalid choice. Please Enter 1 OR 2 ." << endl;
+	            }
+			}
             int refundAmount;
             cout << "Enter Remaining amount Return To Customer: $";
             cin >> refundAmount;
 
-            customer.refundPayment(paymentMethod, refundAmount);
+            customer.refundPayment(refundMethod, refundAmount);
             break;
         }
         case 5:
@@ -348,7 +361,7 @@ int main()
             cout << "Exiting the program." << endl;
             break;
         default:
-            cerr << "Invalid choice. Try again." << endl;
+            cerr << "Invalid choice. Please Enter Valid Option... " << endl;
         }
 
     } while (choice != 0);
@@ -356,10 +369,13 @@ int main()
     cout<<endl;
     customer.paymentHistory.readFromFile("customer_payment_history.txt");
 
+
     cout << endl
          << " *********************************************************************************************************" << endl
          << "					Thank You For using Our Services" << endl;
 
     return 0;
+    
 }
+
 
