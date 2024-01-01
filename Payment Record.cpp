@@ -13,6 +13,7 @@ public:
     virtual string getPaymentDetails(const string& name, int amount) const = 0;
 };
 
+
 class CreditCard : public PaymentMethod
 {
 private:
@@ -52,6 +53,7 @@ public:
     }
 };
 
+
 class Cash : public PaymentMethod
 {
 public:
@@ -75,6 +77,7 @@ public:
         return name + " - Cash - Amount: $" + to_string(amount);
     }
 };
+
 
 class PaymentHistory
 {
@@ -146,6 +149,7 @@ public:
     }
 };
 
+
 class Customer
 {
 public:
@@ -192,6 +196,7 @@ public:
     }
 };
 
+
 class User
 {
 public:
@@ -211,10 +216,13 @@ public:
     }
 };
 
+
 int main()
 {
     cout << "**************************************************************************************************************" << endl
+    
          << "                     			WelCome To BOOKING SIDE Of Our System							" << endl
+         
          << endl
          << endl
          << "                			<<< We Create And You Celebrate >>>                  " << endl
@@ -314,13 +322,16 @@ if (loginAttempts == maxLoginAttempts) {
 
             customer.makePayment(paymentMethod, amount);
             break;
+            
         }
         case 2:
             customer.displayPaymentHistory();
             break;
+            
         case 3:
             customer.savePaymentHistoryToFile();
             break;
+            
         case 4:
         {
             int refundChoice;
@@ -354,12 +365,15 @@ if (loginAttempts == maxLoginAttempts) {
             customer.refundPayment(refundMethod, refundAmount);
             break;
         }
+        
         case 5:
             customer.displayProfitAndLoss();
             break;
+            
         case 0:
             cout << "Exiting the program." << endl;
             break;
+            
         default:
             cerr << "Invalid choice. Please Enter Valid Option... " << endl;
         }
