@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <vector>
 
@@ -100,24 +101,26 @@ public:
     }
 
     void saveToFile(const string& customerName) const
+{
+    ofstream file("customer_payment_history.txt", ios::app);
+    if (file.is_open())
     {
-        ofstream file("customer_payment_history.txt", ios::app);
-        if (file.is_open())
+        for (const auto& method : paymentMethods)
         {
-            for (const auto& method : paymentMethods)
-            {
-                int amount = 0;
-                file << method->getPaymentDetails(customerName, amount) << endl;
-            }
+            int amount = 0;  // This line initializes the amount to 0
+            method->makePayment(amount);  // Use makePayment to get the actual amount
+            file << method->getPaymentDetails(customerName, amount) << endl;
+        }
 
-            file.close();
-            cout << "Payment history saved to file." << endl << endl;
-        }
-        else
-        {
-            cerr << "Unable to open file for writing." << endl;
-        }
+        file.close();
+        cout << "Payment history saved to file." << endl << endl;
     }
+    else
+    {
+        cerr << "Unable to open file for writing." << endl;
+    }
+}
+
 
     void readFromFile(const string& customerName)
     {
@@ -280,105 +283,111 @@ if (loginAttempts == maxLoginAttempts) {
     customer.readPaymentHistoryFromFile();
 
     do
+{
+    cout << "Menu:" << endl;
+    cout << "1. Make a Payment" << endl;
+    cout << "2. Display Payment History" << endl;
+    cout << "3. Save Payment History to File" << endl;
+    cout << "4. Process Refund" << endl;
+    cout << "5. Display Profit and Loss" << endl;
+    cout << "0. Exit" << endl;
+
+    cout << "Enter your choice: ";
+    cin >> choice;
+
+    switch (choice)
     {
-        cout << "Menu:" << endl;
-        cout << "1. Make a Payment" << endl;
-        cout << "2. Display Payment History" << endl;
-        cout << "3. Save Payment History to File" << endl;
-        cout << "4. Process Refund" << endl;
-        cout << "5. Display Profit and Loss" << endl;
-        cout << "0. Exit" << endl;
+    case 1:
+    {
+        int paymentChoice;
 
-        cout << "Enter your choice: ";
-        cin >> choice;
-
-        switch (choice)
+        while (true)
         {
-        case 1:
-        {
-            int paymentChoice;
+            cout << "Enter payment choice (1 for Credit Card, 2 for Cash): ";
+            cin >> paymentChoice;
 
-			while (true) {
-			    cout << "Enter payment choice (1 for Credit Card, 2 for Cash): ";
-			    cin >> paymentChoice;
-
-			    if (paymentChoice == 1) {
-			        string cardNumber;
-			        cout << "Enter credit card number: ";
-			        cin >> cardNumber;
-			        paymentMethod = new CreditCard(cardNumber);
-			        break;
-			    } else if (paymentChoice == 2) {
-			        paymentMethod = new Cash();
-			        break;
-			    } else {
-			        cerr << "Invalid choice. Please enter 1 or 2." << endl;
-			    }
-			}
-
-            int amount;
-            cout << "Enter payment amount: $";
-            cin >> amount;
-
-            customer.makePayment(paymentMethod, amount);
-            break;
-            
+            if (paymentChoice == 1)
+            {
+                string cardNumber;
+                cout << "Enter credit card number: ";
+                cin >> cardNumber;
+                paymentMethod = new CreditCard(cardNumber);
+                break;
+            }
+            else if (paymentChoice == 2)
+            {
+                paymentMethod = new Cash();
+                break;
+            }
+            else
+            {
+                cerr << "Invalid choice. Please enter 1 or 2." << endl;
+            }
         }
-        case 2:
-            customer.displayPaymentHistory();
-            break;
-            
-        case 3:
-            customer.savePaymentHistoryToFile();
-            break;
-            
-        case 4:
-        {
-            int refundChoice;
-            PaymentMethod* refundMethod = nullptr;
-            while (true)
-			{
-	            cout << "Choose payment method for refund (1 for Credit Card, 2 for Cash): ";
-	            cin >> refundChoice;
-	
-	            PaymentMethod* refundMethod;
-	            if (refundChoice == 1)
-	            {
-	                string cardNumber;
-	                cout << "Enter credit card number: ";
-	                cin >> cardNumber;
-	                refundMethod = new CreditCard(cardNumber);
-	            }
-	            else if (refundChoice == 2)
-	            {
-	                refundMethod = new Cash();
-	            }
-	            else
-	            {
-	                cerr << "Invalid choice. Please Enter 1 OR 2 ." << endl;
-	            }
-			}
-            int refundAmount;
-            cout << "Enter Remaining amount Return To Customer: $";
-            cin >> refundAmount;
 
-            customer.refundPayment(refundMethod, refundAmount);
-            break;
-        }
+        int amount;
+        cout << "Enter payment amount: $";
+        cin >> amount;
+
+        customer.makePayment(paymentMethod, amount);
+        break;
         
-        case 5:
-            customer.displayProfitAndLoss();
+    }
+    case 2:
+        customer.displayPaymentHistory();
+        break;
+        
+    case 3:
+        customer.savePaymentHistoryToFile();
+        break;
+        
+    case 4:
+    {
+        int refundChoice;
+        PaymentMethod* refundMethod = nullptr;
+        cout << "Choose payment method for refund (1 for Credit Card, 2 for Cash): ";
+        cin >> refundChoice;
+
+        if (refundChoice == 1)
+        {
+            string cardNumber;
+            cout << "Enter credit card number: ";
+            cin >> cardNumber;
+            refundMethod = new CreditCard(cardNumber);
+        }
+        else if (refundChoice == 2)
+        {
+            refundMethod = new Cash();
+        }
+        else
+        {
+            cerr << "Invalid choice. Please Enter 1 OR 2." << endl;
             break;
-            
-        case 0:
-            cout << "Exiting the program." << endl;
-            break;
-            
-        default:
-            cerr << "Invalid choice. Please Enter Valid Option... " << endl;
         }
 
-    } while (choice != 0);
+        int refundAmount;
+        cout << "Enter remaining amount to return to the customer: $";
+        cin >> refundAmount;
+
+        customer.refundPayment(refundMethod, refundAmount);
+        break;
+        
+    }
+    
+    case 5:
+        customer.displayProfitAndLoss();
+        break;
+        
+    case 0:
+        cout << "Exiting the program." << endl;
+        break;
+        
+    default:
+        cerr << "Invalid choice. Please Enter Valid Option..." << endl;
+    }
+
+	} while (choice != 0);
+
     
     cout<<endl;
     customer.paymentHistory.readFromFile("customer_payment_history.txt");
@@ -391,5 +400,6 @@ if (loginAttempts == maxLoginAttempts) {
     return 0;
     
 }
+
 
 
