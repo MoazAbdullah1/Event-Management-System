@@ -15,14 +15,13 @@ public:
 };
 
 
-class CreditCard : public PaymentMethod
-{
+class CreditCard : public PaymentMethod {
 private:
     string cardNumber;
 
 public:
     CreditCard(const string& number) : cardNumber(number) {}
-
+    
     string getCardNumber() const
     {
         return cardNumber;
@@ -53,7 +52,6 @@ public:
         return name + " - Credit Card: " + cardNumber + " - Amount: $" + to_string(amount);
     }
 };
-
 
 class Cash : public PaymentMethod
 {
@@ -107,8 +105,8 @@ public:
     {
         for (const auto& method : paymentMethods)
         {
-            int amount = 0;  // This line initializes the amount to 0
-            method->makePayment(amount);  // Use makePayment to get the actual amount
+            int amount = 0;
+            method->makePayment(amount);
             file << method->getPaymentDetails(customerName, amount) << endl;
         }
 
@@ -122,24 +120,48 @@ public:
 }
 
 
-    void readFromFile(const string& customerName)
-    {
-        ifstream file("customer_payment_history.txt");
-        if (file.is_open())
-        {
-            string line;
-            while (getline(file, line))
-            {
-                PaymentMethod* method = new CreditCard("");
-                paymentMethods.push_back(method);
-            }
+//    void readFromFile(const string& customerName)
+//    {
+//        ifstream file("customer_payment_history.txt");
+//        if (file.is_open())
+//        {
+//            string line;
+//            while (getline(file, line))
+//            {
+//                PaymentMethod* method = new CreditCard("");
+//                paymentMethods.push_back(method);
+//            }
+//
+//            file.close();
+//            cout << "Payment history read from file." << endl << endl;
+//        }
+//        else
+//        {
+//            cerr << "Unable to open file for reading." << endl;
+//        }
+//    }
 
+
+
+	void readFromFile(const string& customerName) {
+        ifstream file("customer_payment_history.txt");
+        if (file.is_open()) {
+            string line;
+            while (getline(file, line)) {
+                cout << "Payment Details for " << customerName << ": " << line << endl;
+            }
             file.close();
-            cout << "Payment history read from file." << endl << endl;
-        }
-        else
-        {
+        } else {
             cerr << "Unable to open file for reading." << endl;
+        }
+    }
+
+
+    void displayPaymentHistory(const string& customerName) {
+        for (const auto& method : paymentMethods) {
+            int amount = 0;
+            method->makePayment(amount);
+            cout << method->getPaymentDetails(customerName, amount) << endl;
         }
     }
 
@@ -290,6 +312,7 @@ if (loginAttempts == maxLoginAttempts) {
     cout << "3. Save Payment History to File" << endl;
     cout << "4. Process Refund" << endl;
     cout << "5. Display Profit and Loss" << endl;
+    cout << "6. Read All Records " << endl;
     cout << "0. Exit" << endl;
 
     cout << "Enter your choice: ";
@@ -378,6 +401,10 @@ if (loginAttempts == maxLoginAttempts) {
         customer.displayProfitAndLoss();
         break;
         
+    case 6:
+    	customer.paymentHistory.readFromFile("customer_payment_history.txt");
+    	
+        
     case 0:
         cout << "Exiting the program." << endl;
         break;
@@ -390,7 +417,6 @@ if (loginAttempts == maxLoginAttempts) {
 
     
     cout<<endl;
-    customer.paymentHistory.readFromFile("customer_payment_history.txt");
 
 
     cout << endl
